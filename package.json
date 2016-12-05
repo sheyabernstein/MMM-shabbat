@@ -1,0 +1,21 @@
+{
+  "name": "mmm-shabbat",
+  "version": "1.0.0",
+  "description": "Shabbat times for MagicMirror2",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sheyabernstein/mmm-shabbat.git"
+  },
+  "keywords": [
+    "MagicMirror",
+    "Shabbat",
+    "Hebrew",
+    "Jewish",
+  ],
+  "author": "sheyabernstein",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sheyabernstein/mmm-shabbat/issues"
+  },
+  "homepage": "https://github.com/sheyabernstein/mmm-shabbat#readme"
+}
