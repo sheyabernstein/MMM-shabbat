@@ -199,7 +199,6 @@ Module.register("MMM-shabbat", {
 	    }
 
 	    interval = interval.asMilliseconds();
-	    interval = -70000
 	    interval = interval - (interval + interval);
 	    
 	    window.shabbatTimer = setTimeout(function(){
