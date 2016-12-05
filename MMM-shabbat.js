@@ -32,14 +32,6 @@ Module.register("MMM-shabbat", {
 		return ["moment.min.js"];
 	},
 
-	// Define required translations.
-	getTranslations: function() {
-		// The translations for the defaut modules are defined in the core translation files.
-		// Therefor we can just return false. Otherwise we should have returned a dictionairy.
-		// If you're trying to build yiur own module including translations, check out the documentation.
-		return false;
-	},
-
 	// Define start sequence.
 	start: function() {
 		Log.info("Starting module: " + this.name);
@@ -81,7 +73,7 @@ Module.register("MMM-shabbat", {
 		}
 
 		var header = document.createElement("div");
-		header.className = "small light";
+		header.className = "small bright";
 		header.innerHTML = this.parashat.title + ' | ' + this.parashat.hebrew;
 		wrapper.appendChild(header);
 
