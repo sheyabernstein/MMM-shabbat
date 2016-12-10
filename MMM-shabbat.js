@@ -81,19 +81,23 @@ Module.register("MMM-shabbat", {
 		table.className = "small";
 		wrapper.appendChild(table);
 
-		var row = document.createElement("tr");
-		table.appendChild(row);
+		if (this.candles) {
+			var row = document.createElement("tr");
+			table.appendChild(row);
 
-		var candlesCell = document.createElement("td");
-		candlesCell.innerHTML = this.candles.title;
-		row.appendChild(candlesCell);
+			var candlesCell = document.createElement("td");
+			candlesCell.innerHTML = this.candles.title;
+			row.appendChild(candlesCell);
+		}
 
-		var row = document.createElement("tr");
-		table.appendChild(row);
+		if (this.havdalah) {
+			var row = document.createElement("tr");
+			table.appendChild(row);
 
-		var havdalahCell = document.createElement("td");
-		havdalahCell.innerHTML = this.havdalah.title;
-		row.appendChild(havdalahCell);
+			var havdalahCell = document.createElement("td");
+			havdalahCell.innerHTML = this.havdalah.title;
+			row.appendChild(havdalahCell);
+		}
 
 		return wrapper;
 	},
@@ -168,9 +172,15 @@ Module.register("MMM-shabbat", {
 			}
 		}
 
-		if (this.config.observe && this.candles.hasOwnProperty("date") && this.havdalah.hasOwnProperty("date")) {
-			window.hideStart = this.candles.date;
-			window.hideEnd = this.havdalah.date;
+		if (this.config.observe) {
+			if (this.candles && "date" in this.candles) {
+				window.hideStart = this.candles.date;
+			}
+
+			if (this.havdalah && "date" in this.havdalah) {
+				window.hideStart = this.havdalah.date;
+			}
+
 			this.startTimer();
 		}
 
@@ -205,7 +215,7 @@ Module.register("MMM-shabbat", {
 			document.body.setAttribute("style", "display: block");
 			this.config.modulesHidden = false;
 		}
-		else {
+		else if (!this.config.modulesHidden && window.hideStart > window.hideEnd) {
 			document.body.setAttribute("style", "display: none");
 			this.config.modulesHidden = true;	
 		}
