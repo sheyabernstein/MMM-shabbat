@@ -18,7 +18,8 @@ Module.register("MMM-shabbat", {
 		longitude: "",
 		tzid: "",
 
-		updateInterval: 6 * 60 * 60 * 1000, // every 6 hours
+		//updateInterval: 6 * 60 * 60 * 1000, // every 6 hours
+		updateInterval: 10000,
 		animationSpeed: 1000,
 
 		retryDelay: 2500,
@@ -29,12 +30,13 @@ Module.register("MMM-shabbat", {
 
 	// Define required scripts.
 	getScrips: function() {
-		return ["moment.min.js"];
+		return ["moment.js"];
 	},
 
 	// Define start sequence.
 	start: function() {
 		Log.info("Starting module: " + this.name);
+		this.getScrips();
 
 		this.parashat = null;
 		this.candles = null;
@@ -204,10 +206,10 @@ Module.register("MMM-shabbat", {
 	    interval = interval - (interval + interval);
 	    
 	    window.shabbatTimer = setTimeout(function(){
-	    	self.toggleBody();
+	    	self.toggleModules();
 	    }, interval);
 	    
-	    Log.info(this.name + " set timer to toggle modulesHidden to " + this.config.modulesHidden + " in " + interval + " milliseconds")
+	    Log.info(this.name + " set timer to toggle modulesHidden to " + this.config.modulesHidden + " in " + moment.duration(interval).humanize())
 	},
 
 	toggleBody: function(interval) {
@@ -217,8 +219,26 @@ Module.register("MMM-shabbat", {
 		}
 		else if (!this.config.modulesHidden && window.hideStart > window.hideEnd) {
 			document.body.setAttribute("style", "display: none");
-			this.config.modulesHidden = true;	
+			this.config.modulesHidden = true;
 		}
-	}
+	},
 
+	toggleModules: function(interval) {
+		var display;
+
+		if (this.config.modulesHidden) {
+			display = "block";
+			this.config.modulesHidden = false;
+		}
+		if (!this.config.modulesHidden && window.hideStart > window.hideEnd) {
+			display = "none";
+			this.config.modulesHidden = true;
+		}
+
+		document.querySelectorAll('.module').forEach(function(elem) {
+			if (!elem.classList.contains("shabbat-friendly")) {
+				elem.style.display = display;
+			}
+		});
+	}
 })
