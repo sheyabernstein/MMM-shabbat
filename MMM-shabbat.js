@@ -18,8 +18,7 @@ Module.register("MMM-shabbat", {
 		longitude: "",
 		tzid: "",
 
-		//updateInterval: 6 * 60 * 60 * 1000, // every 6 hours
-		updateInterval: 10000,
+		updateInterval: 3 * 60 * 60 * 1000, // every 3 hours
 		animationSpeed: 1000,
 
 		retryDelay: 2500,
