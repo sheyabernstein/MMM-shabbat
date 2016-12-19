@@ -174,12 +174,12 @@ Module.register("MMM-shabbat", {
 		}
 
 		if (this.config.observe) {
-			if (this.candles && "date" in this.candles) {
+			if ("date" in this.candles) {
 				window.hideStart = this.candles.date;
 			}
 
-			if (this.havdalah && "date" in this.havdalah) {
-				window.hideStart = this.havdalah.date;
+			if ("date" in this.havdalah) {
+				window.hideEnd = this.havdalah.date;
 			}
 
 			this.startTimer();
