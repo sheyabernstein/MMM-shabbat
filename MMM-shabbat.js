@@ -174,12 +174,12 @@ Module.register("MMM-shabbat", {
 		}
 
 		if (this.config.observe) {
-			if ("date" in this.candles) {
-				window.hideStart = this.candles.date;
+			// There's not candle lighting time on shabbat, so window.hideStart stays the havdalah time
+			if (this.havdalah && "date" in this.havdalah) {
+				window.hideStart = this.havdalah.date;
 			}
-
-			if ("date" in this.havdalah) {
-				window.hideEnd = this.havdalah.date;
+			else if (this.candles && "date" in this.candles) {
+				window.hideStart = this.candles.date;
 			}
 
 			this.startTimer();
@@ -194,13 +194,7 @@ Module.register("MMM-shabbat", {
 	    var interval = null;
 	    var now = moment();
 
-	    if (!this.config.modulesHidden) {
-	    	interval = moment.duration(now.diff(window.hideStart));
-	    }
-	    else {
-	    	interval = moment.duration(now.diff(window.hideEnd));
-	    }
-
+	    interval = moment.duration(now.diff(window.hideStart));
 	    interval = interval.asMilliseconds();
 	    interval = interval - (interval + interval);
 	    
@@ -216,7 +210,7 @@ Module.register("MMM-shabbat", {
 			document.body.setAttribute("style", "display: block");
 			this.config.modulesHidden = false;
 		}
-		else if (!this.config.modulesHidden && window.hideStart > window.hideEnd) {
+		else if (!this.config.modulesHidden) {
 			document.body.setAttribute("style", "display: none");
 			this.config.modulesHidden = true;
 		}
