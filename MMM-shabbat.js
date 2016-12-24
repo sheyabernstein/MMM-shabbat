@@ -7,231 +7,232 @@
 
 Module.register("MMM-shabbat", {
 
-	// Default module config.
-	defaults: {
-		observe: true,
-		minutesBefore: "18",
-		minutesAfter: "50",
-		ashkenaz: true,
-		
-		latitude: "",
-		longitude: "",
-		tzid: "",
+  // Default module config.
+  defaults: {
+    observe: true,
+    minutesBefore: "18",
+    minutesAfter: "50",
+    ashkenaz: true,
 
-		updateInterval: 3 * 60 * 60 * 1000, // every 3 hours
-		animationSpeed: 1000,
+    latitude: "",
+    longitude: "",
+    tzid: "",
 
-		retryDelay: 2500,
-		initialLoadDelay: 0,
+    updateInterval: 3 * 60 * 60 * 1000, // every 3 hours
+    animationSpeed: 1000,
 
-		modulesHidden: false, // don't change
-	},
+    retryDelay: 2500,
+    initialLoadDelay: 0,
 
-	// Define required scripts.
-	getScrips: function() {
-		return ["moment.js"];
-	},
+    modulesHidden: false, // don't change
+  },
 
-	// Define start sequence.
-	start: function() {
-		Log.info("Starting module: " + this.name);
-		this.getScrips();
+  // Define required scripts.
+  getScrips: function() {
+    return ["moment.min.js"];
+  },
 
-		this.parashat = null;
-		this.candles = null;
-		this.havdalah = null;
+  // Define start sequence.
+  start: function() {
+    Log.info("Starting module: " + this.name);
 
-		this.loaded = false;
-		this.scheduleUpdate(this.config.initialLoadDelay);
-	},
+    this.parashat = null;
+    this.candles = null;
+    this.havdalah = null;
 
-	// Override dom generator.
-	getDom: function() {
-		var wrapper = document.createElement("div");
+    this.loaded = false;
+    this.scheduleUpdate(this.config.initialLoadDelay);
+  },
 
-		if (this.config.latitude === "") {
-			wrapper.innerHTML = "Please set the correct <i>latitude</i> in the config for module: " + this.name + ".";
-			wrapper.className = "dimmed light small";
-			return wrapper;
-		}
+  // Override dom generator.
+  getDom: function() {
+    var wrapper = document.createElement("div");
 
-		if (this.config.longitude === "") {
-			wrapper.innerHTML = "Please set the correct <i>longitude</i> in the config for module: " + this.name + ".";
-			wrapper.className = "dimmed light small";
-			return wrapper;
-		}
+    if (this.config.latitude === "") {
+      wrapper.innerHTML = "Please set the correct <i>latitude</i> in the config for module: " + this.name + ".";
+      wrapper.className = "dimmed light small";
+      return wrapper;
+    }
 
-		if (this.config.tzid === "") {
-			wrapper.innerHTML = "Please set the correct <i>tzid</i> in the config for module: " + this.name + ".";
-			wrapper.className = "dimmed light small";
-			return wrapper;
-		}
+    if (this.config.longitude === "") {
+      wrapper.innerHTML = "Please set the correct <i>longitude</i> in the config for module: " + this.name + ".";
+      wrapper.className = "dimmed light small";
+      return wrapper;
+    }
 
-		if (!this.loaded) {
-			wrapper.innerHTML = this.translate("LOADING");
-			wrapper.className = "dimmed light";
-			return wrapper;
-		}
+    if (this.config.tzid === "") {
+      wrapper.innerHTML = "Please set the correct <i>tzid</i> in the config for module: " + this.name + ".";
+      wrapper.className = "dimmed light small";
+      return wrapper;
+    }
 
-		var header = document.createElement("div");
-		header.className = "small bright";
-		header.innerHTML = this.parashat.title + ' | ' + this.parashat.hebrew;
-		wrapper.appendChild(header);
+    if (!this.loaded) {
+      wrapper.innerHTML = this.translate("LOADING");
+      wrapper.className = "dimmed light";
+      return wrapper;
+    }
 
-		var table = document.createElement("table");
-		table.className = "small";
-		wrapper.appendChild(table);
+    var header = document.createElement("div");
+    header.className = "small bright";
+    header.innerHTML = this.parashat.title + ' | ' + this.parashat.hebrew;
+    wrapper.appendChild(header);
 
-		if (this.candles) {
-			var row = document.createElement("tr");
-			table.appendChild(row);
+    var table = document.createElement("table");
+    table.className = "small";
+    wrapper.appendChild(table);
 
-			var candlesCell = document.createElement("td");
-			candlesCell.innerHTML = this.candles.title;
-			row.appendChild(candlesCell);
-		}
+    var candlesText = "שבת שלום";
+    var havdalahText = "שבוע טוב";
 
-		if (this.havdalah) {
-			var row = document.createElement("tr");
-			table.appendChild(row);
+    if (this.candles) {
+      candlesText = this.candles.title;
+    }
 
-			var havdalahCell = document.createElement("td");
-			havdalahCell.innerHTML = this.havdalah.title;
-			row.appendChild(havdalahCell);
-		}
+    if (this.havdalah) {
+      havdalahText = this.havdalah.title;
+    }
 
-		return wrapper;
-	},
+    if (!this.candles && this.havdalah) {
+      havdalahText = null;
+    }
 
-	updateTimes: function() {
-		var self = this;
-		var url = self.makeURL();
-		var retry = true;
+    if (!this.candles && !this.havdalah) {
+      candlesText = null;
+    }
 
-		var timesRequest = new XMLHttpRequest();
-		timesRequest.open("GET", url, true);
-		timesRequest.onreadystatechange = function() {
-			if (this.readyState === 4) {
-				if (this.status === 200) {
-					self.processTimes(JSON.parse(this.response));
-				} else {
-					Log.error(self.name + ": Could not load shabbat updateTimes.");
-				}
+    if (candlesText) {
 
-				if (retry) {
-					self.scheduleUpdate((self.loaded) ? -1 : self.config.retryDelay);
-				}
-			}
-		};
-		timesRequest.send();
-	},
+      var row = document.createElement("tr");
+      table.appendChild(row);
 
-	scheduleUpdate: function(delay) {
-		var nextLoad = this.config.updateInterval;
-		if (typeof delay !== "undefined" && delay >= 0) {
-			nextLoad = delay;
-		}
+      var candlesCell = document.createElement("td");
+      candlesCell.innerHTML = candlesText;
+      row.appendChild(candlesCell);
+    }
 
-		var self = this
-		setTimeout(function() {
-			self.updateTimes();
-		}, nextLoad);
-	},
+    if (havdalahText) {
 
-	makeURL: function() {
-		var c = this.config
-		
-		var ashkenaz = "on"
-		if (!c.ashkenaz) {
-			ashkenaz = "off"
-		}
+      var row = document.createElement("tr");
+      table.appendChild(row);
 
-		var url = "http://www.hebcal.com/shabbat/?cfg=json&b=" + c.minutesBefore + "&m=" + c.minutesAfter + "&a=" + ashkenaz + "&geo=pos&latitude=" + c.latitude + "&longitude=" + c.longitude + "&tzid=" + c.tzid;
-		return url
-	},
+      var havdalahCell = document.createElement("td");
+      havdalahCell.innerHTML = havdalahText;
+      row.appendChild(havdalahCell);
+    }
 
-	processTimes: function(data) {
-		if (!data) {
-			// Did not receive usable new data.
-			return;
-		}
+    return wrapper;
+  },
 
-		for (var time in data.items) {
-			time = data.items[time];
+  updateTimes: function() {
+    var self = this;
+    var url = self.makeURL();
+    var retry = true;
 
-			if (!time.hasOwnProperty("hebrew")) {
-				// do nothing
-			}
-			else if (time.category == "parashat") {
-				this.parashat = time;
-			}
-			else if (time.category == "candles") {
-				this.candles = time;
-			}
-			else if (time.category == "havdalah") {
-				this.havdalah = time;
-			}
-		}
+    var timesRequest = new XMLHttpRequest();
+    timesRequest.open("GET", url, true);
+    timesRequest.onreadystatechange = function() {
+      if (this.readyState === 4) {
+        if (this.status === 200) {
+          self.processTimes(JSON.parse(this.response));
+        } else {
+          Log.error(self.name + ": Could not load shabbat updateTimes.");
+        }
 
-		if (this.config.observe) {
-			// There's not candle lighting time on shabbat, so window.hideStart stays the havdalah time
-			if (this.havdalah && "date" in this.havdalah) {
-				window.hideStart = this.havdalah.date;
-			}
-			else if (this.candles && "date" in this.candles) {
-				window.hideStart = this.candles.date;
-			}
+        if (retry) {
+          self.scheduleUpdate((self.loaded) ? -1 : self.config.retryDelay);
+        }
+      }
+    };
+    timesRequest.send();
+  },
 
-			this.startTimer();
-		}
+  scheduleUpdate: function(delay) {
+    var nextLoad = this.config.updateInterval;
+    if (typeof delay !== "undefined" && delay >= 0) {
+      nextLoad = delay;
+    }
 
-		this.loaded = true;
-		this.updateDom(this.config.animationSpeed);
-	},
+    var self = this
+    setTimeout(function() {
+      self.updateTimes();
+    }, nextLoad);
+  },
 
-	startTimer: function() {
-		var self = this;
-	    var interval = null;
-	    var now = moment();
+  makeURL: function() {
+    var c = this.config
 
-	    interval = moment.duration(now.diff(window.hideStart));
-	    interval = interval.asMilliseconds();
-	    interval = interval - (interval + interval);
-	    
-	    window.shabbatTimer = setTimeout(function(){
-	    	self.toggleModules();
-	    }, interval);
-	    
-	    Log.info(this.name + " set timer to toggle modulesHidden to " + this.config.modulesHidden + " in " + moment.duration(interval).humanize())
-	},
+    var ashkenaz = "on"
+    if (!c.ashkenaz) {
+      ashkenaz = "off"
+    }
 
-	toggleBody: function(interval) {
-		if (this.config.modulesHidden) {
-			document.body.setAttribute("style", "display: block");
-			this.config.modulesHidden = false;
-		}
-		else if (!this.config.modulesHidden) {
-			document.body.setAttribute("style", "display: none");
-			this.config.modulesHidden = true;
-		}
-	},
+    var url = "http://www.hebcal.com/shabbat/?cfg=json&b=" + c.minutesBefore + "&m=" + c.minutesAfter + "&a=" + ashkenaz + "&geo=pos&latitude=" + c.latitude + "&longitude=" + c.longitude + "&tzid=" + c.tzid;
+    return url
+  },
 
-	toggleModules: function(interval) {
-		var display;
+  processTimes: function(data) {
+    if (!data) {
+      // Did not receive usable new data.
+      return;
+    }
 
-		if (this.config.modulesHidden) {
-			display = "block";
-			this.config.modulesHidden = false;
-		}
-		if (!this.config.modulesHidden && window.hideStart > window.hideEnd) {
-			display = "none";
-			this.config.modulesHidden = true;
-		}
+    for (var time in data.items) {
+      time = data.items[time];
 
-		document.querySelectorAll('.module').forEach(function(elem) {
-			if (!elem.classList.contains("shabbat-friendly")) {
-				elem.style.display = display;
-			}
-		});
-	}
+      if (!time.hasOwnProperty("hebrew")) {
+        // do nothing
+      } else if (time.category == "parashat") {
+        this.parashat = time;
+      } else if (time.category == "candles") {
+        this.candles = time;
+      } else if (time.category == "havdalah") {
+        this.havdalah = time;
+      }
+    }
+
+    if (this.config.observe && (this.candles || this.havdalah)) {
+
+      if (this.candles && this.candles.hasOwnProperty("date")) {
+        this.startTimer(this.candles.date, true)
+      } else if (this.havdalah && this.havdalah.hasOwnProperty("date")) {
+        this.startTimer(this.havdalah.date, false)
+      }
+    }
+
+    this.loaded = true;
+    this.updateDom(this.config.animationSpeed);
+  },
+
+  startTimer: function(zeroHour, hide) {
+    var self = this;
+    var interval = null;
+    var now = moment();
+
+    interval = moment.duration(now.diff(zeroHour));
+
+    interval = interval.asMilliseconds();
+    interval = interval - (interval + interval);
+
+    Log.info(this.name + " set timer to toggle modulesHidden to " + this.config.modulesHidden + " in " + moment.duration(interval).humanize())
+
+    window.shabbatTimer = setTimeout(function() {
+      self.toggleModules(hide);
+    }, interval);
+  },
+
+  toggleModules: function(hide) {
+    var display = "block";
+
+    if (hide == true) {
+      display = "none";
+    }
+
+    this.config.modulesHidden = hide;
+
+    document.querySelectorAll('.module').forEach(function(elem) {
+      if (!elem.classList.contains("shabbat-friendly")) {
+        elem.style.display = display;
+      }
+    });
+  }
 })
