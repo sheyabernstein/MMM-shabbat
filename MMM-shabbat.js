@@ -39,7 +39,7 @@ Module.register("MMM-shabbat", {
         this.parashat = null;
         this.candles = null;
         this.havdalah = null;
-        this.holiday = null;
+        this.other = null;
 
         this.loaded = false;
         this.scheduleUpdate(this.config.initialLoadDelay);
@@ -75,21 +75,26 @@ Module.register("MMM-shabbat", {
         table.className = "small";
         wrapper.appendChild(table);
 
+        var otherText = null;
         var candlesText = "שבת שלום";
         var havdalahText = "שבוע טוב";
-        var holidayText = null;
+
+        if (this.other) {
+        	otherText = this.other.title;
+        }
 
         if (this.candles) {
-            candlesText = this.candles.title;
+        	candlesText = this.candles.title;
+            havdalahText = null;
+            if (otherText) {
+            	candlesText = "Shabbos c" + candlesText.substring(1);
+            }
         }
 
         if (this.havdalah) {
             havdalahText = this.havdalah.title;
         }
 
-        if (this.holiday) {
-            holidayText = this.holiday.title;
-        }
 
         if (!this.candles && this.havdalah) {
             havdalahText = null;
@@ -100,7 +105,7 @@ Module.register("MMM-shabbat", {
             havdalahText = null;
         }
 
-        var times = [candlesText, havdalahText, holidayText]
+        var times = [otherText, candlesText, havdalahText]
         for (var time in times) {
             text = times[time]
 
@@ -170,6 +175,9 @@ Module.register("MMM-shabbat", {
             return;
         }
 
+        console.log(data)
+        var other = []
+
         for (var time in data.items) {
             time = data.items[time];
 
@@ -181,8 +189,17 @@ Module.register("MMM-shabbat", {
                 this.candles = time;
             } else if (time.category == "havdalah") {
                 this.havdalah = time;
-            } else if (time.category == "holiday") {
-                this.holiday = time;
+            } else {
+            	if (time.hasOwnProperty("date")) {
+            		if (this.other && this.other.hasOwnProperty("date")) {
+            			if (time.date < this.other.date) {
+            				this.other = time
+            			}
+            		}
+            		else {
+            			this.other = time;
+            		}
+            	}
             }
         }
 
