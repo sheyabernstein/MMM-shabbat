@@ -28,5 +28,5 @@ Shabbat times for MagicMirror<sup>2</sup> made possible by the awesome [Hebcal A
 | `latitude` | | [-90 to 90] – latitude in decimal format (e.g. `31.76904` or `-23.5475`) |
 | `longitude` | | [-180 to 180] – longitude decimal format (e.g. `35.21633` or `-46.63611`) |
 | `tzid` | | TimezoneIdentifier (See [List of tz database time zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)) |
-| `updateInterval` | `10800000` | Time in ms to wait until updating |
+| `updateInterval` | `60 * 60 * 1000` | Time in ms to wait until updating |
 | `retryDelay` | `2500` | Time in ms to wait before retry |
