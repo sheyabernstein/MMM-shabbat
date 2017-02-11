@@ -18,7 +18,7 @@ Module.register("MMM-shabbat", {
         longitude: "",
         tzid: "",
 
-        updateInterval: 60 * 60 * 1000, // every hour
+        updateInterval:  30 * 60 * 1000, // every thirty minutes
         animationSpeed: 1000,
 
         retryDelay: 2500,
@@ -39,7 +39,6 @@ Module.register("MMM-shabbat", {
         this.parashat = null;
         this.candles = null;
         this.havdalah = null;
-        this.other = null;
 
         this.loaded = false;
         this.scheduleUpdate(this.config.initialLoadDelay);
@@ -92,12 +91,12 @@ Module.register("MMM-shabbat", {
         }
 
         if (this.havdalah) {
-            havdalahText = this.havdalah.title;
-        }
-
-
-        if (!this.candles && this.havdalah) {
-            havdalahText = null;
+            if (Date.parse(this.havdalah.date) <= Date.parse(new Date)) {
+                candlesText = null;
+            }
+            else {
+                havdalahText = this.havdalah.title;
+            }
         }
 
         if (!this.candles && !this.havdalah) {
@@ -175,7 +174,6 @@ Module.register("MMM-shabbat", {
             return;
         }
 
-        console.log(data)
         var other = []
 
         for (var time in data.items) {
@@ -203,17 +201,17 @@ Module.register("MMM-shabbat", {
             }
         }
 
+        this.loaded = true;
+        this.updateDom(this.config.animationSpeed);
+
         if (this.config.observe && (this.candles || this.havdalah)) {
 
-            if (this.candles && this.candles.hasOwnProperty("date")) {
+            if (this.candles && this.candles.hasOwnProperty("date") && this.havdalah.hasOwnProperty("date")) {
                 this.startTimer(this.candles.date, true)
             } else if (this.havdalah && this.havdalah.hasOwnProperty("date")) {
                 this.startTimer(this.havdalah.date, false)
             }
         }
-
-        this.loaded = true;
-        this.updateDom(this.config.animationSpeed);
     },
 
     startTimer: function(zeroHour, hide) {
@@ -221,11 +219,12 @@ Module.register("MMM-shabbat", {
         var interval = moment.duration(moment().diff(zeroHour)).asMilliseconds();
         interval = interval - (interval + interval);
 
-        Log.info(this.name + " set timer to toggle modulesHidden to " + this.config.modulesHidden + " in " + moment.duration(interval).humanize())
-
-        window.shabbatTimer = setTimeout(function() {
-            self.toggleModules(hide);
+        delete window.shabbatTimer;
+        window.shabbatTimer = setTimeout(function(){
+        	self.toggleModules(hide)
         }, interval);
+
+        Log.info(this.name + " set timer to toggle modulesHidden to " + !this.config.modulesHidden + " in " + moment.duration(interval).humanize())
     },
 
     toggleModules: function(hide) {
