@@ -85,7 +85,7 @@ Module.register("MMM-shabbat", {
 
             if (dayEvents) {
                 dateEl = document.createElement("div");
-                dateEl.className = "xsmall light dimmed";
+                dateEl.className = "xsmall light";
                 dateEl.innerHTML = date;
                 wrapper.appendChild(dateEl);
 
