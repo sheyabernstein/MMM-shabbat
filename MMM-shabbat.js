@@ -67,7 +67,9 @@ Module.register("MMM-shabbat", {
 
         var header = document.createElement("div");
         header.className = "small bright";
-        header.innerHTML = this.parashat.title + ' | ' + this.parashat.hebrew;
+        if (this.parashat) {
+            header.innerHTML = this.parashat.title + ' | ' + this.parashat.hebrew;
+        }
         wrapper.appendChild(header);
 
         var table = document.createElement("table");
