@@ -1,5 +1,5 @@
 # MMM-shabat
-Shabbat times for MagicMirror<sup>2</sup> made possible by the awesome [Hebcal API](https://www.hebcal.com/home/developer-apis) with optional functionality to hide all modules on shabbat.
+Shabbat times for MagicMirror<sup>2</sup> made possible by the awesome [Hebcal API](https://www.hebcal.com/home/developer-apis).
 
 ## Dependencies
   * An installation of [MagicMirror<sup>2</sup>](https://github.com/MichMich/MagicMirror)
@@ -12,6 +12,7 @@ Shabbat times for MagicMirror<sup>2</sup> made possible by the awesome [Hebcal A
      {
          module: 'MMM-shabbat',
          position: 'top_left',
+         title: 'Zmanim',
          config: {
                 // See 'Configuration options' for more information.
             }
@@ -21,7 +22,6 @@ Shabbat times for MagicMirror<sup>2</sup> made possible by the awesome [Hebcal A
 ## Configuration Options
 | **Option** | **Default** | **Description** |
 | --- | --- | --- |
-| `observe` | `true` | Hide all modules on shabbat
 | `minutesBefore` | `18` | Candle-lighting time minutes before sunset |
 | `minutesAfter` | `50` | Havdalah time minutes after sundown |
 | `ashkenaz` | `true` | use Sephardic (`false`) or Ashkenazis transliterations (`true`) |

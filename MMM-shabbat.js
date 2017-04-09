@@ -9,7 +9,6 @@ Module.register("MMM-shabbat", {
 
     // Default module config.
     defaults: {
-        observe: true,
         minutesBefore: "18",
         minutesAfter: "50",
         ashkenaz: true,
@@ -36,10 +35,7 @@ Module.register("MMM-shabbat", {
     start: function() {
         Log.info("Starting module: " + this.name);
 
-        this.parashat = null;
-        this.candles = null;
-        this.havdalah = null;
-
+        this.items = [];
         this.loaded = false;
         this.scheduleUpdate(this.config.initialLoadDelay);
     },
@@ -65,58 +61,41 @@ Module.register("MMM-shabbat", {
             return wrapper;
         }
 
-        var header = document.createElement("div");
-        header.className = "small bright";
-        if (this.parashat) {
-            header.innerHTML = this.parashat.title + ' | ' + this.parashat.hebrew;
-        }
-        wrapper.appendChild(header);
+        var events = {};
 
-        var table = document.createElement("table");
-        table.className = "small";
-        wrapper.appendChild(table);
+        for (var i in this.items) {
+            var item = this.items[i]
+            date = moment(item["date"]).calendar().split(" at")[0]
+            title = item["title"];
 
-        var otherText = null;
-        var candlesText = "שבת שלום";
-        var havdalahText = "שבוע טוב";
+            if (date === "Saturday") {date = "Shabbos"}
 
-        if (this.other) {
-        	otherText = this.other.title;
-        }
-
-        if (this.candles) {
-        	candlesText = this.candles.title;
-            havdalahText = null;
-            if (otherText) {
-            	candlesText = "Shabbos c" + candlesText.substring(1);
-            }
-        }
-
-        if (this.havdalah) {
-            if (Date.parse(this.havdalah.date) <= Date.parse(new Date)) {
-                candlesText = null;
+            if(events.hasOwnProperty(date)) {
+                    events[date].push(title);
             }
             else {
-                havdalahText = this.havdalah.title;
+                events[date] = [title];
             }
         }
 
-        if (!this.candles && !this.havdalah) {
-            candlesText = null;
-            havdalahText = null;
-        }
+        eventKeys = Object.keys(events).slice(0, 3)
 
-        var times = [otherText, candlesText, havdalahText]
-        for (var time in times) {
-            text = times[time]
+        for (var i = 0; i < eventKeys.length; i++) {
+            var dayEvents = events[eventKeys[i]];
 
-            if (text) {
-                var row = document.createElement("tr");
-                table.appendChild(row);
+            if (dayEvents) {
+                dateEl = document.createElement("div");
+                dateEl.className = "xsmall light dimmed";
+                dateEl.innerHTML = date;
+                wrapper.appendChild(dateEl);
 
-                var cell = document.createElement("td");
-                cell.innerHTML = text;
-                row.appendChild(cell);
+                for (var e in dayEvents) {
+                    eventEl = document.createElement("div");
+                    eventEl.className = "small";
+                    eventEl.innerHTML = dayEvents[e];
+                    eventEl.style["text-indent"] = "1em";
+                    wrapper.appendChild(eventEl);    
+                }
             }
         }
 
@@ -171,77 +150,13 @@ Module.register("MMM-shabbat", {
     },
 
     processTimes: function(data) {
-        if (!data) {
+        if (!data || !data['items']) {
             // Did not receive usable new data.
             return;
         }
 
-        var other = []
-
-        for (var time in data.items) {
-            time = data.items[time];
-
-            if (!time.hasOwnProperty("hebrew")) {
-                // do nothing
-            } else if (time.category == "parashat") {
-                this.parashat = time;
-            } else if (time.category == "candles") {
-                this.candles = time;
-            } else if (time.category == "havdalah") {
-                this.havdalah = time;
-            } else {
-            	if (time.hasOwnProperty("date")) {
-            		if (this.other && this.other.hasOwnProperty("date")) {
-            			if (time.date < this.other.date) {
-            				this.other = time
-            			}
-            		}
-            		else {
-            			this.other = time;
-            		}
-            	}
-            }
-        }
-
+        this.items = data['items']
         this.loaded = true;
         this.updateDom(this.config.animationSpeed);
-
-        if (this.config.observe && (this.candles || this.havdalah)) {
-
-            if (this.candles && this.candles.hasOwnProperty("date") && this.havdalah.hasOwnProperty("date")) {
-                this.startTimer(this.candles.date, true)
-            } else if (this.havdalah && this.havdalah.hasOwnProperty("date")) {
-                this.startTimer(this.havdalah.date, false)
-            }
-        }
-    },
-
-    startTimer: function(zeroHour, hide) {
-        var self = this;
-        var interval = moment.duration(moment().diff(zeroHour)).asMilliseconds();
-        interval = interval - (interval + interval);
-
-        delete window.shabbatTimer;
-        window.shabbatTimer = setTimeout(function(){
-        	self.toggleModules(hide)
-        }, interval);
-
-        Log.info(this.name + " set timer to toggle modulesHidden to " + !this.config.modulesHidden + " in " + moment.duration(interval).humanize())
-    },
-
-    toggleModules: function(hide) {
-        var display = "block";
-
-        if (hide == true) {
-            display = "none";
-        }
-
-        this.config.modulesHidden = hide;
-
-        document.querySelectorAll('.module').forEach(function(elem) {
-            if (!elem.classList.contains("shabbat-friendly")) {
-                elem.style.display = display;
-            }
-        });
     }
 })
