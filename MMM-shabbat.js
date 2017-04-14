@@ -64,11 +64,11 @@ Module.register("MMM-shabbat", {
         var events = {};
 
         for (var i in this.items) {
-            var item = this.items[i]
-            date = moment(item["date"]).calendar().split(" at")[0]
-            title = item["title"];
+            var item = this.items[i];
+            var date = moment(item["date"]).calendar().split(" at")[0];
+            var title = item["title"];
 
-            if (date === "Saturday") {date = "Shabbos"}
+            if (date === "Saturday") {date = "Shabbos";}
 
             if(events.hasOwnProperty(date)) {
                     events[date].push(title);
@@ -78,15 +78,16 @@ Module.register("MMM-shabbat", {
             }
         }
 
-        eventKeys = Object.keys(events).slice(0, 3)
+        eventKeys = Object.keys(events).slice(0, 3);
 
-        for (var i = 0; i < eventKeys.length; i++) {
+        for (var i in eventKeys) {
+            var day = eventKeys[i];
             var dayEvents = events[eventKeys[i]];
 
             if (dayEvents) {
                 dateEl = document.createElement("div");
                 dateEl.className = "xsmall light";
-                dateEl.innerHTML = date;
+                dateEl.innerHTML = day;
                 wrapper.appendChild(dateEl);
 
                 for (var e in dayEvents) {
@@ -94,7 +95,7 @@ Module.register("MMM-shabbat", {
                     eventEl.className = "small";
                     eventEl.innerHTML = dayEvents[e];
                     eventEl.style["text-indent"] = "1em";
-                    wrapper.appendChild(eventEl);    
+                    wrapper.appendChild(eventEl);
                 }
             }
         }
